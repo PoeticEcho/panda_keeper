@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>바오 패밀리 유니버스: 사육사의 기적 (Bao Keeper Ultimate 5.0)</title>
+    <style>
+        :root {
+            --forest-deep: #1b4d22;
+            --forest-mid: #4caf50;
+            --forest-light: #e8f5e9;
+            --gold: #ffca28;
+            --cream: #fffef9;
+            --ink: #2c3e50;
+            --heart-pink: #ff8a80;
+            --shadow-cozy: rgba(27, 77, 34, 0.08);
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; 
+            -webkit-user-select: none; 
+            user-select: none; 
+        }
+
+        body { 
+            background: #fdfcf7; 
+            color: var(--ink); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 15px; 
+        }
+        
+        #game-window {
+            width: 100%; 
+            max-width: 480px; 
+            background: var(--cream); 
+            border-radius: 40px;
+            box-shadow: 0 35px 80px rgba(27, 77, 34, 0.12); 
+            overflow: hidden; 
+            border: 8px solid var(--forest-light); 
+            position: relative;
+        }
+
+        /* 고급 상단 대시보드 HUD */
+        .top-hud { 
+            background: linear-gradient(135deg, var(--forest-light) 0%, #f4fbf5 100%); 
+            padding: 20px 24px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 3px solid #c8e6c9; 
+        }
+        .hud-profile { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 2px;
+        }
+        .hud-profile-text { 
+            font-weight: 800; 
+            font-size: 1.2rem; 
+            color: var(--forest-deep); 
+            text-shadow: 1px 1px 0px white; 
+        }
+        .hud-tier-badge {
+            font-size: 0.8rem;
+            color: var(--forest-mid);
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #c8e6c9;
+            display: inline-block;
+            width: max-content;
+        }
+        .hud-right-zone {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .hud-wallet { 
+            background: white; 
+            padding: 8px 14px; 
+            border-radius: 24px; 
+            font-weight: bold; 
+            color: #e65100; 
+            font-size: 0.95rem; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); 
+            border: 1px solid #edf2f7; 
+        }
+
+        /* 프리미엄 스탯 대시보드 */
+        .dashboard-stats { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px; 
+            padding: 18px; 
+            background: #fafdfa; 
+        }
+        .stat-node { 
+            background: white; 
+            padding: 12px 6px; 
+            border-radius: 20px; 
+            text-align: center; 
+            border: 1px solid #edf5ed; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01); 
+        }
+        .stat-name { 
+            font-size: 0.8rem; 
+            color: #8892b0; 
+            font-weight: bold; 
+        }
+        .stat-val { 
+            font-size: 1.15rem; 
+            font-weight: 800; 
+            margin: 4px 0; 
+            color: #111; 
+        }
+        .bar-outer { 
+            width: 85%; 
+            height: 6px; 
+            background: #edf2f7; 
+            border-radius: 3px; 
+            margin: 0 auto; 
+            overflow: hidden; 
+        }
+        .bar-inner { 
+            height: 100%; 
+            background: linear-gradient(to right, var(--forest-mid), #81c784); 
+            width: 100%; 
+            transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); 
+        }
+
+        /* 자연 테마 방사장 (엔클로저) */
+        #main-yard { 
+            height: 350px; 
+            background: linear-gradient(to bottom, #edf9ed 0%, #c8e6c9 100%); 
+            position: relative; 
+            overflow: hidden; 
+            border-bottom: 3px solid #edf2f7; 
+            cursor: pointer;
+        }
+        #main-yard.theme-flower { background: linear-gradient(to bottom, #fffde7 0%, #c8e6c9 100%); }
+        #main-yard.theme-ice { background: linear-gradient(to bottom, #e1f5fe 0%, #c8e6c9 100%); }
+        
+        .yard-deco-layer { 
+            position: absolute; 
+            bottom: 0; 
+            width: 100%; 
+            height: 70px; 
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0,20 Q15,4 30,20 Q45,2 60,20 Q75,6 90,20 Q100,12 100,20 Z' fill='%2366bb6a' opacity='0.5'/%3E%3C/svg%3E"); 
+            background-size: 250px 100%; 
+            pointer-events: none;
+        }
+
+        /* 5.0 명품 공식 실루엣 매핑 팬더 마스코트 */
+        #panda-avatar { 
+            width: 125px; 
+            height: 125px; 
+            position: absolute; 
+            bottom: 35px; 
+            left: 180px; 
+            z-index: 10; 
+            transition: left 2.2s linear, top 2.2s linear, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .anim-walk { animation: a-walk 0.5s infinite alternate ease-in-out; }
+        .anim-eat { animation: a-eat 0.25s infinite; }
+        .anim-sleep { animation: a-sleep 2s infinite alternate ease-in-out; transform: rotate(90deg) !important; opacity: 0.85; }
+        .anim-happy { animation: a-happy 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes a-walk { 0% { transform: translateY(0) rotate(-2deg); } 100% { transform: translateY(-10px) rotate(2deg); } }
+        @keyframes a-eat { 0% { transform: scale(1) scaleY(1); } 50% { transform: scale(1.05) scaleY(0.95); } 100% { transform: scale(1) scaleY(1); } }
+        @keyframes a-sleep { 0% { opacity: 0.7; } 100% { opacity: 1; transform: rotate(90deg) translate(3px, 3px); } }
+        @keyframes a-happy { 0% { transform: scale(1); } 45% { transform: scale(1.12) translateY(-15px); } 100% { transform: scale(1); } }
+
+        /* 동적 분수 FX 파티클 시스템 */
+        .particle { 
+            position: absolute; 
+            pointer-events: none; 
+            z-index: 100; 
+            animation: particle-fade 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; 
+            font-weight: bold; 
+            font-size: 1.5rem;
+        }
+        @keyframes particle-fade {
+            0% { opacity: 1; transform: translate(0, 0) scale(1.2); }
+            100% { opacity: 0; transform: translate(var(--mx), var(--my)) scale(0.6); }
+        }
+
+        .bubble-msg { 
+            position: absolute; 
+            background: rgba(0,0,0,0.65); 
+            color: white; 
+            padding: 6px 14px; 
+            border-radius: 14px; 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            pointer-events: none; 
+            z-index: 99; 
+            animation: b-up 1.2s forwards; 
+        }
+        @keyframes b-up { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-35px); } }
+
+        /* 하단 감성 탭 컨트롤 바 */
+        .tab-bar { 
+            display: flex; 
+            background: white; 
+            border-top: 1px solid #edf2f7; 
+            border-bottom: 2px solid #edf2f7; 
+            padding: 0 10px; 
+        }
+        .tab-btn { 
+            flex: 1; 
+            padding: 15px; 
+            border: none; 
+            background: none; 
+            font-weight: bold; 
+            color: #8892b0; 
+            cursor: pointer; 
+            text-align: center; 
+            font-size: 0.95rem; 
+            border-radius: 16px; 
+            transition: all 0.2s; 
+        }
+        .tab-btn.active { 
+            color: var(--forest-deep); 
+            border-bottom: 4px solid var(--forest-deep); 
+            background: #f4fbf4; 
+            font-weight: 800; 
+        }
+        .tab-btn:active { transform: scale(0.95); }
+
+        /* 컨텐츠 패널 */
+        .panel-content { 
+            padding: 18px; 
+            height: 220px; 
+            overflow-y: auto; 
+            display: none; 
+            background: white; 
+        }
+        .panel-content.active { display: block; }
+
+        /* 고품격 카드 인터페이스 디자인 */
+        .work-grid, .shop-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+        }
+        .card-item { 
+            border: 2px solid #edf2f7; 
+            padding: 14px; 
+            border-radius: 22px; 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            background: #fafafa; 
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .card-item:hover { 
+            border-color: var(--forest-mid); 
+            background: #f2f9f2; 
+            transform: translateY(-3px); 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.03); 
+        }
+        .card-item:active { transform: scale(0.97); }
+        .card-meta { 
+            font-size: 0.95rem; 
+            font-weight: bold; 
+            color: var(--ink); 
+        }
+        .card-sub { 
+            font-size: 0.78rem; 
+            color: #7f8c8d; 
+            margin-top: 3px; 
+            line-height: 1.3; 
+        }
+        .card-price { 
+            font-size: 0.8rem; 
+            color: #e65100; 
+            font-weight: bold; 
+            margin-top: 6px; 
+        }
+
+        /* 사육 일지 폼 */
+        .log-item { 
+            font-size: 0.85rem; 
+            padding: 7px 0; 
+            border-bottom: 1px dashed #edf2f7; 
+            color: #555; 
+            display: flex; 
+            gap: 8px; 
+        }
+        .btn-reset-data {
+            width: 100%;
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn-reset-data:hover { background: #ffcdd2; }
+
+        /* 프리미엄 모달 오버레이 인프라 */
+        .screen-cover { 
+            position: absolute; 
+            top:0; left:0; 
+            width:100%; 
+            height:100%; 
+            background: rgba(18, 38, 20, 0.65); 
+            z-index: 500; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.3s ease; 
+            padding: 20px; 
+        }
+        .screen-cover.active { 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
+        .window-box { 
+            background: white; 
+            width: 100%; 
+            max-width: 380px; 
+            border-radius: 32px; 
+            padding: 28px; 
+            text-align: center; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
+            border: 4px solid var(--forest-light); 
+            animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        @keyframes scaleIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .t-track { 
+            width: 100%; 
+            height: 24px; 
+            background: #edf2f7; 
+            border-radius: 12px; 
+            position: relative; 
+            margin: 20px 0; 
+            overflow: hidden; 
+            border: 1px solid #e2e8f0; 
+        }
+        .t-green { position: absolute; left: 42%; width: 16%; height: 100%; background: #a5d6a7; }
+        .t-gold { position: absolute; left: 48%; width: 4%; height: 100%; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+        .t-cursor { position: absolute; left: 0; width: 6px; height: 100%; background: #e53e3e; }
+        
+        .prop-item { 
+            position: absolute; 
+            width: 36px; 
+            height: 36px; 
+            z-index: 9; 
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-window">
+    <!-- 대시보드 HUD 영역 -->
+    <div class="top-hud">
+        <div class="hud-profile">
+            <span id="txt-avatar-name" class="hud-profile-text">푸바오</span> 
+            <span id="txt-keeper-tier" class="hud-tier-badge">🌱 수습 사육사</span>
+        </div>
+        <div class="hud-right-zone">
+            <div class="hud-wallet" id="txt-money">🪙 50</div>
+            <div class="hud-wallet" style="color:var(--forest-deep)" id="txt-day">Day 1</div>
+        </div>
+    </div>
+
+    <!-- 스탯 상황판 -->
+    <div class="dashboard-stats">
+        <div class="stat-node">
+            <div class="stat-name">🎋 포만감</div>
+            <div class="stat-val" id="ui-hunger">80%</div>
+            <div class="bar-outer"><div class="bar-inner" id="bar-hunger"></div></div>
+        </div>
+        <div class="stat-node">
+            <div class="stat-name">✨ 청결도</div>
+            <div class="stat-val" id="ui-clean">100%</div>
+            <div class="bar-outer"><div class="bar-inner" id="bar-clean"></div></div>
+        </div>
+        <div class="stat-node">
+            <div class="stat-name">💖 친밀도</div>
+            <div class="stat-val" id="ui-love">0</div>
+            <div class="bar-outer"><div class="bar-inner" id="bar-love" style="width:0%"></div></div>
+        </div>
+    </div>
+
+    <!-- 인터랙티브 파티클 런타임 마당 방사장 -->
+    <div id="main-yard" onclick="triggerYardClickFX(event)">
+        <div class="yard-deco-layer"></div>
+        <div id="prop-layer"></div>
+        
+        <!-- V5.0 초정밀 외모 고증 동적 모핑 시스템 (순수 SVG 벡터 아키텍처) -->
+        <svg id="panda-avatar" class="anim-walk" viewBox="0 0 100 100">
+            <!-- 1. 기본 라운드 귀 세트 -->
+            <g id="ears-round">
+                <circle cx="23" cy="21" r="12" fill="#222" />
+                <circle cx="77" cy="21" r="12" fill="#222" />
+            </g>
+            <!-- 2. 러바오 전용 각진 세모 귀 세트 (기본 비활성) -->
+            <g id="ears-triangle" style="display:none;">
+                <polygon points="11,24 22,6 33,21" fill="#222" />
+                <polygon points="89,24 78,6 67,21" fill="#222" />
+            </g>
+            
+            <!-- 포동포동한 몸뚱아리 및 하체 고증 -->
+            <ellipse cx="50" cy="72" rx="35" ry="26" fill="#fff" stroke="#222" stroke-width="2.5" />
+            <circle cx="27" cy="87" r="9" fill="#222" />
+            <circle cx="73" cy="87" r="9" fill="#222" />
+            
+            <!-- 공식 둥글넓적 머리 윤곽선 -->
+            <ellipse cx="50" cy="49" rx="39" ry="32" fill="#fff" stroke="#222" stroke-width="2.5" />
+            
+            <!-- 3. 푸바오 전용 깃털 머리 뿔 (기본 비활성) -->
+            <path id="fubao-horn" d="M50,18 Q46,4 50,0 Q54,4 50,18" fill="#222" style="display:none;" />
+            
+            <!-- 촉촉하고 아기자기한 눈매 패치 디자인 -->
+            <ellipse id="eye-patch-l" cx="35" cy="47" rx="8.5" ry="11.5" fill="#222" transform="rotate(-14 35 47)" />
+            <ellipse id="eye-patch-r" cx="65" cy="47" rx="8.5" ry="11.5" fill="#222" transform="rotate(14 65 47)" />
+            
+            <!-- 영롱한 화이트 하이라이트 투톤 눈동자 -->
+            <circle cx="36" cy="45" r="3.2" fill="#fff" />
+            <circle cx="38" cy="47" r="1" fill="#fff" />
+            <circle cx="64" cy="45" r="3.2" fill="#fff" />
+            <circle cx="66" cy="47" r="1" fill="#fff" />
+            
+            <!-- 미니멀 코와 앵두 같은 해피 웃음 입선 -->
+            <polygon points="48,55 52,55 50,58" fill="#222" />
+            <path id="avatar-mouth" d="M46,62 Q50,66 54,62" fill="none" stroke="#222" stroke-width="2.2" stroke-linecap="round" />
+            
+            <!-- 복숭아빛 감성 볼터치 레이어 -->
+            <circle cx="21" cy="57" r="6.5" fill="#ff8a80" opacity="0.55" />
+            <circle cx="79" cy="57" r="6.5" fill="#ff8a80" opacity="0.55" />
+            
+            <!-- 부끄러움/교감 모션 전용 비밀 솜방망이 손 -->
+            <ellipse id="avatar-happy-hand" cx="28" cy="63" rx="9" ry="13" fill="#222" opacity="0" transform="rotate(20 28 63)" />
+        </svg>
+    </div>
+
+    <!-- 하단 메뉴 컨트롤 패널 탭 시스템 -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('tab-work', this)">📋 사육업무</button>
+        <button class="tab-btn" onclick="switchTab('tab-shop', this)">🛒 코인상점</button>
+        <button class="tab-btn" onclick="switchTab('tab-log', this)">📖 사육일지</button>
+    </div>
+
+    <!-- 탭 1: 사육업무 -->
+    <div class="panel-content active" id="tab-work">
+        <div class="work-grid">
+            <div class="card-item" onclick="actFeed(event)">
+                <div class="card-meta">🎋 유기농 대나무</div>
+                <div class="card-sub">아작와작 고소하고 신선한 식사</div>
+                <div class="card-price" style="color:var(--forest-mid)">비용: 무료</div>
+            </div>
+            <div class="card-item" onclick="launchBakingMinigame()">
+                <div class="card-meta">🥖 영양 워토우 제빵</div>
+                <div class="card-sub">황금 화력 조절 타이밍 미니게임</div>
+                <div class="card-price" style="color:var(--forest-mid)">비용: 무료</div>
+            </div>
+            <div class="card-item" onclick="actCleanYard()">
+                <div class="card-meta">🌊 방사장 물청소</div>
+                <div class="card-sub">분변을 수거하고 고압수로 정화</div>
+                <div class="card-price">보상: 🪙 +25 코인</div>
+            </div>
+            <div class="card-item" onclick="actMedicalTraining()">
+                <div class="card-meta">⚖️ 메디컬 체중훈련</div>
+                <div class="card-sub">스스로 체중계에 오르는 특수 교감</div>
+                <div class="card-price">보상: 🪙 +40 코인</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 탭 2: 코인상점 -->
+    <div class="panel-content" id="tab-shop">
+        <div class="shop-grid">
+            <div class="card-item" onclick="buyItem(event, 'apple', 35)">
+                <div class="card-meta">🍎 아삭한 황금사과</div>
+                <div class="card-sub">포만감 대폭 회복용 고당도 특식</div>
+                <div class="card-price">가격: 🪙 35</div>
+            </div>
+            <div class="card-item" onclick="buyItem(event, 'bench', 80)">
+                <div class="card-meta">🪵 참나무 통원목 평상</div>
+                <div class="card-sub">방사장에 영구히 가구를 배치</div>
+                <div class="card-price">가격: 🪙 80</div>
+            </div>
+            <div class="card-item" onclick="buyItem(event, 'theme_flower', 150)">
+                <div class="card-meta">🌼 봄날 유채꽃밭 테마</div>
+                <div class="card-sub">화사한 노란 유채꽃 배경 교체</div>
+                <div class="card-price">가격: 🪙 150</div>
+            </div>
+            <div class="card-item" onclick="buyItem(event, 'theme_ice', 200)">
+                <div class="card-meta">❄️ 시원한 얼음궁전 테마</div>
+                <div class="card-sub">여름나기용 특수 쿨링 스킨</div>
+                <div class="card-price">가격: 🪙 200</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 탭 3: 사육일지 및 초기화 인프라 -->
+    <div class="panel-content" id="tab-log">
+        <div id="log-scroll-area"></div>
+        <button class="btn-reset-data" onclick="resetAllGameData()">⚠️ 사육 데이터 완전 초기화</button>
+    </div>
+</div>
+
+<!-- 다목적 모달 오버레이 인프라 코어 -->
+<div class="screen-cover" id="overlay-ui">
+    <div class="window-box" id="overlay-box-content"></div>
+</div>
+
+<script>
+    // 외모 및 물리 엔진 계수 고증 데이터베이스
+    const pandaProfiles = {
+        fubao: { name: "푸바오", desc: "정수리에 뾰족하게 돋아난 깃털 뿔이 치명적인 매력 포인트!", hungerRate: 4, cleanRate: 2, loveBonus: 1.0, style: 'fubao' },
+        lebao: { name: "러바오", desc: "쫑긋하게 솟은 유니크한 세모 모양 귀와 듬직한 장난꾸러기 성격!", hungerRate: 4, cleanRate: 3, loveBonus: 1.1, style: 'lebao' },
+        ruibao: { name: "루이바오", desc: "차분하고 영리한 쌍둥이 언니. 눈 패치가 둥글둥글해요.", hungerRate: 3, cleanRate: 2, loveBonus: 1.2, style: 'twins' },
+        huibao: { name: "후이바오", desc: "어마어마한 번개 말썽쟁이! 청결도가 광속으로 떨어집니다.", hungerRate: 3, cleanRate: 5, loveBonus: 1.4, style: 'twins' }
+    };
+
+    let pState = {
+        selectedId: 'fubao',
+        day: 1, hunger: 80, clean: 100, love: 0, coins: 50,
+        activeTheme: 'default', purchasedItems: [], currentMotion: 'idle', poops: [], lockAI: false
+    };
+
+    let pPos = { x: 180, y: 150 };
+    let gameMinigameInterval;
+    let timingPos = 0; let timingDir = 1;
+
+    // 자연주의 오디오 신디사이저 아키텍처 (Web Audio API 오케스트레이션)
+    const AudioEngine = {
+        ctx: null,
+        init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+        
+        // 1. 대나무 아작 사운드 (나무 마찰 임펄스 합성 변조)
+        playCrunch() {
+            this.init();
+            let now = this.ctx.currentTime;
+            for(let i=0; i<3; i++) {
+                setTimeout(() => {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(140 + Math.random()*50, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.07);
+                    gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.005, this.ctx.currentTime + 0.07);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.07);
+                }, i * 130);
+            }
+        },
+
+        // 2. 고증 완벽 반영 성대 떨림 행복음 ("꾸르륵~" LFO 진폭 주파수 합성)
+        playPurr() {
+            this.init();
+            let now = this.ctx.currentTime;
+            let osc = this.ctx.createOscillator();
+            let lfo = this.ctx.createOscillator();
+            let lfoGain = this.ctx.createGain();
+            let mainGain = this.ctx.createGain();
+
+            osc.type = 'sine'; osc.frequency.setValueAtTime(175, now);
+            lfo.type = 'sawtooth'; lfo.frequency.setValueAtTime(15, now); // 15Hz의 고밀도 진동
+            lfoGain.gain.setValueAtTime(32, now);
+
+            mainGain.gain.setValueAtTime(0, now);
+            mainGain.gain.linearRampToValueAtTime(0.22, now + 0.08);
+            mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+
+            lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+            osc.connect(mainGain); mainGain.connect(this.ctx.destination);
+
+            lfo.start(); osc.start();
+            lfo.stop(now + 0.65); osc.stop(now + 0.65);
+        },
+
+        // 3. 메탈릭 레조넌스 코인 회수음
+        playCoin() {
+            this.init();
+            let now = this.ctx.currentTime;
+            let osc1 = this.ctx.createOscillator();
+            let osc2 = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+
+            osc1.type = 'sine'; osc1.frequency.setValueAtTime(987.77, now);
+            osc2.type = 'sine'; osc2.frequency.setValueAtTime(1318.51, now);
+
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+            osc1.connect(gain); osc2.connect(gain); gain.connect(this.ctx.destination);
+            osc1.start(); osc2.start(); osc1.stop(now + 0.3); osc2.stop(now + 0.3);
+        },
+
+        // 4. 업적 달성 청아한 벨소리
+        playSuccessBell() {
+            this.init();
+            let frequencies = [523.25, 659.25, 783.99, 1046.50];
+            frequencies.forEach((f, idx) => {
+                setTimeout(() => {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(f, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.35);
+                }, idx * 85);
+            });
+        }
+    };
+
+    window.onload = () => {
+        // 영속성 데이터 복구 기믹
+        const saved = localStorage.getItem('bao_universe_v5_final_prod');
+        if(saved) {
+            pState = JSON.parse(saved);
+            initMainEngine();
+        } else {
+            triggerPandaSelectionModal();
+        }
+
+        // 실시간 연산 구동 엔진 주입
+        setInterval(enginePandaAI, 3500);
+        setInterval(engineNaturalDeduction, 5000);
+
+        // 오디오 정책 해제용 첫 스크린 터치 감지 위임 처리
+        document.body.addEventListener('click', () => AudioEngine.init(), { once: true });
+    };
+
+    // 캐릭터 메디컬 프로필 매칭 인트로 모달 생성
+    function triggerPandaSelectionModal() {
+        const cover = document.getElementById('overlay-ui');
+        const box = document.getElementById('overlay-box-content');
+        cover.className = "screen-cover active";
+        
+        let html = `<h3>🐼 보살필 아기 팬더 가문 선택</h3>`;
+        html += `<p style='margin-bottom:15px; font-size:0.85rem; color:#718096;'>티셔츠 공식 시글루엣이 반영된 고증 버전 바오 패밀리입니다.</p>`;
+        for(let key in pandaProfiles) {
+            let p = pandaProfiles[key];
+            html += `
+                <div class="card-item" style="text-align:left; margin-bottom:10px;" onclick="selectPandaTarget('${key}')">
+                    <div style="font-weight:800; font-size:1.15rem; color:var(--forest-deep)">${p.name}</div>
+                    <div style="font-size:0.82rem; color:#555; margin-top:3px; line-height:1.4">${p.desc}</div>
+                </div>
+            `;
+        }
+        box.innerHTML = html;
+    }
+
+    function selectPandaTarget(id) {
+        pState.selectedId = id;
+        document.getElementById('overlay-ui').className = "screen-cover";
+        AudioEngine.playSuccessBell();
+        addLog(`[사육계약] 공식 외모 프로필이 매핑된 아기 판다 '${pandaProfiles[id].name}' 보호 관찰 업무를 인계받았습니다.`);
+        initMainEngine();
+    }
+
+    function initMainEngine() {
+        document.getElementById('txt-avatar-name').innerText = pandaProfiles[pState.selectedId].name;
+        
+        // 데이터에 귀속된 외모 고증 동적 모핑 시스템 스크립트 분기 제어
+        applyMorphologyGochung(pState.selectedId);
+        applyVisualTheme(pState.activeTheme);
+        
+        if(pState.purchasedItems.includes('bench')) {
+            setTimeout(() => drawBenchUI(), 100);
+        }
+        syncDataUI();
+    }
+
+    // 티셔츠 디자인 고증: 실시간 SVG 외모 변형 기능
+    function applyMorphologyGochung(id) {
+        const roundEars = document.getElementById('ears-round');
+        const triEars = document.getElementById('ears-triangle');
+        const horn = document.getElementById('fubao-horn');
+        const lPatch = document.getElementById('eye-patch-l');
+        const rPatch = document.getElementById('eye-patch-r');
+        const avatar = document.getElementById('panda-avatar');
+
+        // 초기화
+        roundEars.style.display = "block";
+        triEars.style.display = "none";
+        horn.style.display = "none";
+        avatar.style.transform = "scale(1)";
+        lPatch.setAttribute('rx', '8.5'); lPatch.setAttribute('ry', '11.5');
+        rPatch.setAttribute('rx', '8.5'); rPatch.setAttribute('ry', '11.5');
+
+        let profile = pandaProfiles[id];
+        if(profile.style === 'fubao') {
+            horn.style.display = "block"; // 깃털 머리 뿔 뿅!
+        } else if(profile.style === 'lebao') {
+            roundEars.style.display = "none";
+            triEars.style.display = "block"; // 세모 귀 부장님 모드 오픈!
+        } else if(profile.style === 'twins') {
+            avatar.style.transform = "scale(0.88)"; // 쌍둥이들은 크기를 조금 더 아담하고 작게 스케일 다운
+            lPatch.setAttribute('rx', '10'); lPatch.setAttribute('ry', '10'); // 조금 더 둥글둥글한 눈매 패치
+            rPatch.setAttribute('rx', '10'); rPatch.setAttribute('ry', '10');
+        }
+    }
+
+    // 분수 효과 동적 파티클 스프레이 엔진
+    function spawnParticleFX(x, y, char, color = '#ff8a80') {
+        const yard = document.getElementById('main-yard');
+        for (let i = 0; i < 6; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.innerHTML = char;
+            p.style.color = color;
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            
+            let mx = (Math.random() - 0.5) * 140;
+            let my = -(Math.random() * 90 + 40);
+            p.style.setProperty('--mx', mx + 'px');
+            p.style.setProperty('--my', my + 'px');
+
+            yard.appendChild(p);
+            setTimeout(() => p.remove(), 1000);
+        }
+    }
+
+    function triggerYardClickFX(e) {
+        if(e.target.id === 'main-yard' || e.target.classList.contains('yard-deco-layer')) {
+            let bound = e.currentTarget.getBoundingClientRect();
+            let clickX = e.clientX - bound.left;
+            let clickY = e.clientY - bound.top;
+            spawnParticleFX(clickX, clickY, '✨', '#ffca28');
+        }
+    }
+
+    function syncDataUI() {
+        document.getElementById('ui-hunger').innerText = pState.hunger + "%";
+        document.getElementById('ui-clean').innerText = pState.clean + "%";
+        document.getElementById('ui-love').innerText = pState.love;
+        document.getElementById('txt-money').innerText = `🪙 ${pState.coins}`;
+        document.getElementById('txt-day').innerText = `Day ${pState.day}`;
+
+        document.getElementById('bar-hunger').style.width = pState.hunger + "%";
+        document.getElementById('bar-clean').style.width = pState.clean + "%";
+        document.getElementById('bar-love').style.width = (pState.love % 100) + "%";
+
+        let tier = Math.floor(pState.love / 100);
+        let txt = "🌱 수습 사육사";
+        if(tier === 1) txt = "🎋 주임 사육사";
+        else if(tier === 2) txt = "⭐ 베테랑 삼촌";
+        else if(tier >= 3) txt = "👑 명예 수석 사육사 (강할부지급)";
+        document.getElementById('txt-keeper-tier').innerText = txt;
+
+        const mouth = document.getElementById('avatar-mouth');
+        if(pState.hunger < 30 || pState.clean < 40) {
+            mouth.setAttribute('d', 'M46,65 Q50,61 54,65');
+        } else { mouth.setAttribute('d', 'M46,62 Q50,66 54,62'); }
+        localStorage.setItem('bao_universe_v5_final_prod', JSON.stringify(pState));
+    }
+
+    function addLog(text) {
+        const area = document.getElementById('log-scroll-area');
+        area.insertAdjacentHTML('afterbegin', `<div class="log-item"><span>🍃</span><span>${text}</span></div>`);
+    }
+
+    function popBubble(txt) {
+        const yard = document.getElementById('main-yard');
+        const b = document.createElement('div');
+        b.classList.add('bubble-msg'); b.innerText = txt;
+        b.style.left = (pPos.x + 15) + 'px'; b.style.top = (pPos.y - 20) + 'px';
+        yard.appendChild(b); setTimeout(() => b.remove(), 1200);
+    }
+
+    function enginePandaAI() {
+        if(pState.currentMotion === 'eating' || pState.lockAI) return;
+        let roll = Math.random();
+        const ava = document.getElementById('panda-avatar');
+
+        if(roll < 0.6) {
+            pState.currentMotion = 'walking'; ava.className = 'anim-walk';
+            pPos.x = Math.floor(Math.random() * 250 + 35);
+            pPos.y = Math.floor(Math.random() * 65 + 110);
+            ava.style.left = pPos.x + 'px'; ava.style.top = pPos.y + 'px';
+            let curLeft = parseFloat(ava.style.left) || 180;
+            ava.style.transform = (pPos.x < curLeft) ? "scaleX(-1)" : "scaleX(1)";
+        } else if(roll < 0.85) {
+            pState.currentMotion = 'idle'; ava.className = '';
+        } else {
+            pState.currentMotion = 'sleeping'; ava.className = 'anim-sleep';
+            popBubble("💤 쿨쿨..");
+        }
+    }
+
+    function engineNaturalDeduction() {
+        if(pState.lockAI) return;
+        let prof = pandaProfiles[pState.selectedId];
+        pState.hunger = Math.max(0, pState.hunger - prof.hungerRate);
+        pState.clean = Math.max(0, pState.clean - prof.cleanRate);
+
+        if(Math.random() < 0.28 && pState.poops.length < 4) {
+            spawnPoopObject();
+        }
+        syncDataUI();
+    }
+
+    function spawnPoopObject() {
+        const layer = document.getElementById('prop-layer');
+        const id = 'poop_' + Date.now();
+        const el = `
+            <div id="${id}" class="prop-item" style="left:${Math.random()*80 + 8}%; bottom:${Math.random()*25 + 10}px;" onclick="cleanPoopItem(event, '${id}')">
+                <svg viewBox="0 0 30 30" width="100%" height="100%"><path d="M15,5 C10,5 8,10 8,14 C8,19 11,24 15,24 C19,24 22,19 22,14 C22,10 20,5 15,5 Z" fill="#6d4c41"/></svg>
+            </div>
+        `;
+        layer.insertAdjacentHTML('beforeend', el);
+        pState.poops.push(id);
+    }
+
+    function cleanPoopItem(e, id) {
+        e.stopPropagation();
+        document.getElementById(id)?.remove();
+        pState.poops = pState.poops.filter(p => p !== id);
+        pState.clean = Math.min(100, pState.clean + 15);
+        pState.coins += 5;
+        AudioEngine.playCoin();
+        
+        let bound = document.getElementById('main-yard').getBoundingClientRect();
+        spawnParticleFX(e.clientX - bound.left, e.clientY - bound.top, '🪙', '#ffca28');
+        syncDataUI();
+    }
+
+    function switchTab(id, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
+
+    // 업무 1: 대나무 공급
+    function actFeed(e) {
+        if(pState.currentMotion === 'sleeping') return addLog("💤 잠든 판다를 깨우면 스트레스를 받습니다.");
+        pState.hunger = Math.min(100, pState.hunger + 15);
+        pState.love += Math.floor(3 * pandaProfiles[pState.selectedId].loveBonus);
+        
+        AudioEngine.playCrunch();
+        popBubble("🎋 아작와작!");
+        spawnParticleFX(pPos.x + 55, pPos.y + 45, '❤️', '#ff4d4d');
+        setTemporaryAnimation('anim-eat', 'eating', 1600);
+        addLog(`🎋 당일 갓 수확한 유기농 대나무 줄기를 공급했습니다.`);
+        checkDayAdvance(); syncDataUI();
+    }
+
+    // 업무 2: 청소 수거
+    function actCleanYard() {
+        if(pState.poops.length === 0) return addLog("🧹 현재 방사장이 오염되지 않은 무결점 상태입니다.");
+        pState.poops.forEach(id => document.getElementById(id)?.remove());
+        pState.poops = []; pState.clean = 100; pState.coins += 25;
+        AudioEngine.playCoin();
+        addLog("🌊 고압수 정화 소독을 통하여 방사장 환경 지수를 최대로 충전하고 25코인을 얻었습니다.");
+        syncDataUI();
+    }
+
+    // 업무 3: 메디컬 트레이닝
+    function actMedicalTraining() {
+        if(pState.hunger < 30) return addLog("⚠️ 판다가 배고픔으로 인해 타겟봉 트레이닝에 집중하지 못합니다.");
+        pState.love += Math.floor(15 * pandaProfiles[pState.selectedId].loveBonus);
+        pState.coins += 40;
+        AudioEngine.playSuccessBell();
+        AudioEngine.playPurr();
+        popBubble("💕 꾸르르륵~");
+        
+        setTemporaryAnimation('anim-happy', 'happy', 1200, true);
+        addLog("⚖️ 자발적 체중계 오르기 메디컬 스킨십 트레이닝을 완수했습니다. (+40코인)");
+        checkDayAdvance(); syncDataUI();
+    }
+
+    // 코인 상점 거래소 인프라
+    function buyItem(e, itemKey, cost) {
+        if(pState.coins < cost) return addLog("🪙 거래 실패: 보유하신 대나무 코인이 부족합니다.");
+        if(pState.purchasedItems.includes(itemKey) && itemKey.startsWith('theme')) {
+            applyVisualTheme(itemKey); addLog("🎨 기존에 보유하고 있던 배경 테마로 스킨을 전환했습니다."); return;
+        }
+
+        pState.coins -= cost; pState.purchasedItems.push(itemKey);
+        AudioEngine.playCoin();
+
+        if(itemKey === 'apple') {
+            pState.hunger = Math.min(100, pState.hunger + 30); pState.love += 20;
+            AudioEngine.playCrunch(); popBubble("🍎 아삭사각!");
+            spawnParticleFX(pPos.x + 55, pPos.y + 45, '❤️', '#e53935');
+            addLog("🍎 상점에서 구매한 최고급 당도 보장 사과 보상을 지급했습니다.");
+        } else if(itemKey === 'bench') {
+            drawBenchUI(); addLog("🪵 영구 특수 오브젝트인 원목 가구 평상을 야드 내실에 완공 배치했습니다.");
+        } else if(itemKey.startsWith('theme')) {
+            applyVisualTheme(itemKey); addLog("🎨 신규 공간 테마 인테리어가 정상적으로 발주 및 도색 완료되었습니다.");
+        }
+        syncDataUI();
+    }
+
+    function drawBenchUI() {
+        if(document.getElementById('bench-prop')) return;
+        document.getElementById('prop-layer').insertAdjacentHTML('beforeend', `<div id="bench-prop" style="position:absolute; left:60px; bottom:25px; width:65px; height:22px; background:#8d6e63; border-radius:5px; box-shadow:0 4px 6px rgba(0,0,0,0.1); z-index:5; pointer-events:none;"></div>`);
+    }
+
+    function applyVisualTheme(themeKey) {
+        pState.activeTheme = themeKey;
+        const yard = document.getElementById('main-yard'); yard.className = "";
+        if(themeKey === 'theme_flower') yard.classList.add('theme-flower');
+        if(themeKey === 'theme_ice') yard.classList.add('theme-ice');
+    }
+
+    // 제빵 타이밍 컴포넌트 구동기
+    function launchBakingMinigame() {
+        pState.lockAI = true;
+        const cover = document.getElementById('overlay-ui');
+        const box = document.getElementById('overlay-box-content');
+        
+        box.innerHTML = `
+            <h3 style="font-size:1.35rem">🥖 명품 워토우 특식 구워내기</h3>
+            <p style="font-size:0.88rem; color:#666;">골드 라인 정중앙에 게이지 침이 멈출 때 화력 버튼을 누르세요!</p>
+            <div class="t-track">
+                <div class="t-green"></div><div class="t-gold"></div>
+                <div class="t-cursor" id="t-cursor-obj"></div>
+            </div>
+            <button class="tab-btn" style="background:var(--forest-deep); color:white; border-radius:14px; width:100%" onclick="stopBakingEngine()">오븐 화력 끄기</button>
+        `;
+        cover.className = "screen-cover active";
+
+        timingPos = 0; timingDir = 1;
+        gameMinigameInterval = setInterval(() => {
+            timingPos += 5.5 * timingDir;
+            if(timingPos >= 98 || timingPos <= 0) timingDir *= -1;
+            const cur = document.getElementById('t-cursor-obj');
+            if(cur) cur.style.left = timingPos + '%';
+        }, 22);
+    }
+
+    function stopBakingEngine() {
+        clearInterval(gameMinigameInterval);
+        document.getElementById('overlay-ui').className = "screen-cover";
+        pState.lockAI = false;
+
+        if(timingPos >= 46 && timingPos <= 53) { // Perfect 골드 존
+            AudioEngine.playSuccessBell(); AudioEngine.playPurr();
+            addLog("👑 [대성공] 완벽한 수제 황금 워토우를 배식했습니다! 성대의 떨림음이 울려 퍼집니다. (+45친밀)");
+            pState.hunger = Math.min(100, pState.hunger + 35);
+            pState.love += Math.floor(45 * pandaProfiles[pState.selectedId].loveBonus);
+            popBubble("🥖 환상적인 수제 영양빵!");
+            setTemporaryAnimation('anim-happy', 'happy', 1500, true);
+        } else if(timingPos >= 40 && timingPos <= 60) { // Good 그린 존
+            AudioEngine.playSuccessBell();
+            addLog("👍 [성공] 무난하게 먹음직스러운 워토우 특식을 가열 가공해 배식했습니다.");
+            pState.hunger = Math.min(100, pState.hunger + 15);
+            pState.love += Math.floor(15 * pandaProfiles[pState.selectedId].loveBonus);
+        } else {
+            addLog("💥 [제빵실패] 화력을 제때 끄지 못해 반죽이 전량 새까맣게 탄화 및 파쇄 폐기되었습니다.");
+        }
+        checkDayAdvance(); syncDataUI();
+    }
+
+    function setTemporaryAnimation(animClass, stateKey, duration, showHand = false) {
+        pState.lockAI = true; pState.currentMotion = stateKey;
+        document.getElementById('panda-avatar').className = animClass;
+        
+        const hand = document.getElementById('avatar-happy-hand');
+        if(showHand) hand.style.opacity = "1";
+
+        setTimeout(() => {
+            pState.lockAI = false; pState.currentMotion = 'idle';
+            hand.style.opacity = "0"; syncDataUI();
+        }, duration);
+    }
+
+    function checkDayAdvance() {
+        let nextDay = Math.floor(pState.love / 40) + 1;
+        if(nextDay > pState.day) {
+            pState.day = nextDay;
+            addLog(`☀️ [출근 일지] 정성 어린 간호로 Day ${pState.day}의 평화로운 아침 출근길이 열렸습니다.`);
+            triggerMorningStoryBranch();
+        }
+    }
+
+    // 아침 돌발 상태 처리 선택지 서사 인프라
+    function triggerMorningStoryBranch() {
+        pState.lockAI = true;
+        const cover = document.getElementById('overlay-ui');
+        const box = document.getElementById('overlay-box-content');
+        cover.className = "screen-cover active";
+
+        box.innerHTML = `
+            <h3>📢 Day ${pState.day} 방사장 긴급 돌발 보고</h3>
+            <p style="font-size:0.9rem; text-align:left; line-height:1.5;">봄맞이 유채꽃 군락지에 벌들이 날아들었습니다! 판다가 호기심에 벌을 향해 호기롭게 솜방망이 펀치를 날리려고 대치 중입니다. 어떻게 개입하시겠습니까?</p>
+            <button class="card-item" style="width:100%; margin-bottom:8px; text-align:left;" onclick="resolveStoryBranch('A')"><b>A. 장난감 시선 유인책</b><br><span style="font-size:0.75rem">대나무 껍질을 엮은 수제 인형을 굴려 벌에게서 주의력을 즉시 차단한다.</span></button>
+            <button class="card-item" style="width:100%; text-align:left;" onclick="resolveStoryBranch('B')"><b>B. 자연주의 행동 관찰</b><br><span style="font-size:0.75rem">위험 유해 수준은 아니므로 방사장 밖에서 예리하게 생태 모니터링을 유지한다.</span></button>
+        `;
+    }
+
+    function resolveStoryBranch(choice) {
+        document.getElementById('overlay-ui').className = "screen-cover";
+        pState.lockAI = false;
+        
+        if(choice === 'A') {
+            addLog("📖 [안전조치] 인형 놀이에 집중한 판다가 벌을 잊고 평화롭게 뒹굴었습니다. (+15 코인 보너스)");
+            pState.coins += 15; AudioEngine.playCoin();
+        } else {
+            if(Math.random() < 0.6) {
+                addLog("📖 [생태발달] 벌이 날아가는 비행 궤적을 얌전히 관찰하며 판다의 인지 능력이 상승했습니다! (+25 친밀)");
+                pState.love += 25; AudioEngine.playPurr();
+            } else {
+                addLog("📖 [돌발상황] 호기심이 지나쳐 벌에게 코 끝을 살짝 톡 쏘였습니다! 시무룩함이 번져 응급 조치 연고를 발라주어야 합니다. (청결도 감소)");
+                pState.clean = Math.max(0, pState.clean - 35);
+            }
+        }
+        syncDataUI();
+    }
+
+    function resetAllGameData() {
+        if(confirm("🚨 경고: 지금까지 교감한 판다의 모든 날짜, 코인, 친밀도 성장이 영구 소멸됩니다. 정말 처음부터 다시 시작하시겠습니까?")) {
+            localStorage.removeItem('bao_master_save_v5_final_prod');
+            localStorage.removeItem('bao_universe_v5_final_prod');
+            location.reload();
+        }
+    }
+</script>
+</body>
+</html>
